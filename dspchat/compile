@@ -1,0 +1,58 @@
+#!/bin/bash 
+
+`rm -rf bin`;
+`mkdir bin`;
+
+if [ $1 -a $1 == "clean" ] ; then
+    message="\\n\\tSupression des *.class de toutes les étapes...\\n";
+    echo -e $message;
+    `rm -f bin/*.class`
+    `rm -f etape_1/src/*.class`;
+    `rm -f etape_2/src/*.class`;
+    `rm -f etape_3/src/*.class`;
+    echo -e "\\tSupression terminée.\\n";
+
+elif [ $1 -a $1 == "etape_1" ]; then
+    `rm -f bin/*.class`;
+    `rm -f etape_1/src/*.class`;
+    message="\\n\\tCompilation de l'étape 1...\\n";
+    echo -e $message;
+    `javac etape_1/src/*.java`;
+    `mv etape_1/src/*.class bin/`;
+    echo -e "\\n\\tCompilation terminée.\\n";
+    echo -e "\\tLes fichiers compilés sont dans bin/\\n";
+    
+elif [ $1 -a $1 == "etape_2" ]; then
+    `rm -f bin/*.class`;
+    `rm -f etape_2/src/*.class`;
+    message="\\n\\tCompilation de l'étape 2...\\n";
+    echo -e $message;
+    `javac etape_2/src/*.java`;
+    `mv etape_2/src/*.class bin/`;
+    echo -e "\\n\\tCompilation terminée.\\n";
+    echo -e "\\tLes fichiers compilés sont dans bin/\\n";
+    echo -e "\\tUTILISATION DU GENERATEUR DE STUB:\\n";
+    echo -e "\\t\\tjava StubGenerator UneClasse\\n";
+    echo -e "\\t\\tAttention il ne faut pas préciser l'extension de la classe!!\\n";
+    echo -e "\\t\\tREMARQUE: Il reste a compiler la classe générée (dans le dossier bin/)\\n";
+    
+
+elif [ $1 -a $1 == "etape_3" ]; then
+    `rm -f bin/*.class`;
+    `rm -f etape_3/src/*.class`;
+    message="\\n\\tCompilation de l'étape 3...\\n";
+    echo -e $message;
+    `javac etape_3/src/*.java`;
+    `mv etape_3/src/*.class bin/`;
+    echo -e "\\n\\tCompilation terminée.\\n";
+    echo -e "\\tLes fichiers compilés sont dans bin/\\n";
+
+else
+    message="\\n\\tUsage:\\n";
+    message="$message\\tNettoyer les dossier : ./compile clean\\n";
+    message="$message\\tCompiler une étape   : ./compile etape_i\\n";
+    
+    echo -e $message;
+
+fi;
+

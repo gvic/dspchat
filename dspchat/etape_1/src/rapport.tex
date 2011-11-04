@@ -1,0 +1,144 @@
+\documentclass[]{report}   % list options between brackets
+\usepackage{}              % list packages between braces
+
+% type user-defined commands here
+
+% GESTION LANGUE FRANCAISE
+\usepackage[francais]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+
+% GESTION DES ACCENTS
+%\usepackage[utf8]{inputenc}  
+
+\begin{document}
+
+\title{Projet long d'intergiciels : \\Service de partage d'objets
+  dupliqués en Java}   % type title between braces
+\author{Paul Bonaud\\Victor Godayer}         % type author(s) between braces
+\date\today    % type date between braces
+\maketitle
+
+\begin{abstract}
+  Ce projet avait pour but de nous faire développer un service de gestion
+  d'objet partagés.
+  Pour l'utilisateur, le service accessible est interfacé par un objet
+  nommé \textit{SharedObject}.
+  La gestion de la cohérence est prise en main par le backend (i.e. la couche
+  client et la couche serveur).
+\end{abstract}
+
+\section{Introduction}
+Par soucis de concision nous avons choisi de ne pas présenter le
+service, étant donné que vous êtes le fournisseur des spécifications
+ainsi que le lecteur du rapport...
+On ne parlera donc que des choix de conception et des problèmes rencontrés.
+
+
+\section{Conception}
+\subsection{SharedObject}
+
+\paragraph{}
+Cette entité a pour rôle d'implanter les méthodes métier du service. 
+On y trouve également les \textit{callback} que le
+serveur appelle lorsqu'il a besoin d'invalider un écrivain, un
+lecteur, ou de réduire le verrou.
+
+\paragraph{}
+En terme de synchronisation nous avons du faire attention à 3
+choses.
+
+\paragraph{}
+La première a été d'attendre qu'une quelconque invalidation ou
+réduction de verrou soit terminée avant d'executer une méthode métier
+du service.
+Nous avons mis en oeuvre cette technique en notifiant la fin de
+l'appel d'une méthode d'invalidation grâce à \textit{notify}.
+Du côté métier, la méthode \textit{wait} attendait cette notification
+s'il y avait lieu d'attendre, avant d'opérer dans la modification de
+la valeur du verrou.
+
+\paragraph{}
+La deuxième concerne les méthodes dites \textit{callback}.
+Elle concerne spécialement le changement d'un verrou, lorsque celui ci
+est dans l'état \emph{taken}.
+Lorsqu'il est dans cet état, il est impératif d'attendre que
+l'utilisateur déverouille l'objet avant de pouvoir faire quoi que ce
+soit.
+Cet attente est implanter par la même méthode \textit{wait} que
+précédement. 
+C'est lors de l'appel de la méthode \textit{unlock} que l'execution du
+\textit{callback} sera réveillé.
+A la suite d'un déverouillage de l'objet par l'utilisateur, le verrou
+se trouve dans l'état \textit{cached}. Il faut donc le positionner à
+la valeur spécifier par les automates.
+
+\paragraph{}
+La troisième chose consiste à envoyer la requete de verouillage au
+serveur sans créer de \textit{deadlocks}.
+Sachant que l'objet 
+
+
+
+
+
+\subsection{Client}
+Rien de très compliqué dans la version de l'étape 1.
+Pour ce qui est de l'étape 2, il faut instancier l'objet partagé par
+le constructeur du \textit{stub}.
+Ceci est réalisé dans la méthode \textit{instanciateStub}.
+
+\subsection{Server}
+Rien à préciser, tout était clairement spécifier dans le sujet du
+projet.
+
+Peut être un mot sur le synchonized(idCpt)...
+
+\subsection{ServerObject}
+
+Les méthodes \textit{lock\_read} et \textit{lock\_write} sont
+\textit{synchronized} pour rendre impossible leur execution simultané.
+Ainsi on évite des problèmes de cohérence.
+
+\section{Tests}
+
+\subsection{IRC}
+L'application \textit{IRC} fournie, a permis de verifier les bases du service.
+Mais ceci sans accès concurrents. Apres le codage 'simple' du service, sans
+synchronisation particulière, nous avons pu valider le principe de base du
+service d'objets dupliqués.
+
+Cette application simple nous a donc permis de tester en parties les etapes 1 et
+2.
+Pour tester l'accès concurrent et la cohérence des objets dupliqués, nous avons
+implanter une application dites de 'stress'.
+
+\subsection{Stress Test}
+L'application de stress que nous avons implanté est simple. Un seul objet
+partagé au sein du serveur, accédé par un nombre quelconque de clients en meme temps (avec
+ecriture ou lecture possible par chaque client). Par simplicité nous avons
+choisi un entier comme objet partagé. Sur lequel nous effectuerons des
+incrémentations ou des remisse à zero.
+Nous avons donc implanter \textit{ClientSimple} qui regroupe les
+fonctionnalitées suivantes grace à une interface graphique:
+\begin{itemize}
+\item (écritures 'infinis') incrémentation de l'entier en continu.
+\item (lectures n fois) lecture de la valeur de l'entier n fois à la suite. (n
+paramétrable par l'IHM).
+\item (une écriture) remise à zero de l'entier.
+\item (écritures ou lectures 'infinis') incrémentation ou lecture aléatoirement
+en continu.
+\item (rien) pause du client.\\
+\end{itemize}
+
+Cette application a été tres utile puisqu'en lancant celle-ci sur 3+
+JVM différentes nous avons pu détecter des problèmes de cohérences et de deadlocks sur les \textit{SharedObject}s. 
+
+\section{Repartition du travail}
+Nous nous sommes occupé de la partie 1 ensemble (reflexion et
+codage). Pour le codage, l'un c'est occupé principalement du codage du service
+et l'autre de l'application de stress test.
+Bien que nous ayont réfléchis ensemble sur les deux dernières parties, nous
+avons séparer la phase de \textit{codage}: l'un a codé la partie 2 et l'autre la partie 3.
+
+\end{document}
