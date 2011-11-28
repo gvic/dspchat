@@ -34,14 +34,14 @@ public class CNSApplet extends JApplet implements ActionListener {
 		selectCertificate.setEnabled(false);
 		sign = new JButton("Sign the selected file");
 		sign.setEnabled(false);
-		log = new JTextArea(100,70);
-
+		log = new JTextArea(80,40);
 	    panel.add(selectFile);
 	    panel.add(selectCertificate);
 	    panel.add(sign);
 	    panel.add(log);
 	    Container content = getContentPane();
 	    content.add(panel);
+	    content.setSize(this.WIDTH, 300);
 	    fc = new JFileChooser();
 	}
 
@@ -52,7 +52,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 	            fileToSign = fc.getSelectedFile();
 	            selectCertificate.setEnabled(true);
-	            log.append("Opening: " + fileToSign.getName() + "." + nl);
+	            log.append("File to sign: " + fileToSign.getName() + "." + nl);
 	        } else {
 	        	fileToSign = null;
 	        	selectCertificate.setEnabled(false);
@@ -63,7 +63,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 	            keyFile = fc.getSelectedFile();
 	            sign.setEnabled(true);
-	            log.append("Opening: " + keyFile.getName() + "." + nl);
+	            log.append("Keyfile: " + keyFile.getName() + "." + nl);
 	        } else {
 	        	keyFile = null;
 	        	sign.setEnabled(false);
