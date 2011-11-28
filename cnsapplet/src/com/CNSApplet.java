@@ -21,7 +21,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 	private File fileToSign, keyFile;
 
 	// Called when this applet is loaded into the browser.
-	public void init(){
+	public CNSApplet(){
 		initializeComponents();
 	}
 	

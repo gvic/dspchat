@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
+javac -d . ../src/com/CNSApplet.java
 jar -cmvf manifest.txt cnsapplet.jar com
