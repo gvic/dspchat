@@ -35,6 +35,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 		sign = new JButton("Sign the selected file");
 		sign.setEnabled(false);
 		log = new JTextArea(100,70);
+
 	    panel.add(selectFile);
 	    panel.add(selectCertificate);
 	    panel.add(sign);
