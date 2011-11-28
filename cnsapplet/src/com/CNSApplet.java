@@ -69,7 +69,8 @@ public class CNSApplet extends JApplet implements ActionListener {
 	            log.append("Open command cancelled by user." + nl);
 	        }
 		}else if(e.getSource() == sign){
-			
+			// REAL BUSINESS LOGIC MUST BE IMPLEMENTED HERE
+			// SAKURA POWAAAA HERE YOUR CODING TIME COMES!!
 		}
 	}
 }
