@@ -116,10 +116,10 @@ public class CNSApplet extends JApplet implements ActionListener {
 	    PGPSecretKeyRingCollection pgpSec = 
 	                               new PGPSecretKeyRingCollection(in);
 	    PGPSecretKey key = null;
-	    Iterator rIt = pgpSec.getKeyRings();
+	    Iterator<?> rIt = pgpSec.getKeyRings();
 	    while (key == null && rIt.hasNext()) {
 	      PGPSecretKeyRing kRing = (PGPSecretKeyRing)rIt.next();
-	      Iterator kIt = kRing.getSecretKeys();
+	      Iterator<?> kIt = kRing.getSecretKeys();
 	      while ( key == null && kIt.hasNext() ) {
 	        PGPSecretKey k = (PGPSecretKey)kIt.next();
 	        System.out.println(k + " [secret key]");
