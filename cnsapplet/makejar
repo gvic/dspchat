@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-mkdir classes
-javac -d classes/ src/com/CNSApplet.java
+mkdir -p classes/lib
+# javac -d classes/ src/com/CNSApplet.java
+cp bin/com/ -R classes/
 cp manifest.txt classes/
+cp bcp* classes/lib/
 cd classes/
-jar -cmvf manifest.txt cnsapplet.jar com
+jar -cmvf manifest.txt cnsapplet.jar com lib
 jar tvf cnsapplet.jar
 chmod +x cnsapplet.jar
 # keytool -genkey -keyalg rsa -keysize 1024 -alias cnsappletkey -validity 365 -keystore .keystore
