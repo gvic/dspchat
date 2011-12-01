@@ -1,10 +1,14 @@
 package com;
 
+import java.awt.BorderLayout;
+import java.awt.Button;
 import java.awt.FlowLayout;
+import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,10 +116,10 @@ public class CNSApplet extends JApplet implements ActionListener {
 	    PGPSecretKeyRingCollection pgpSec = 
 	                               new PGPSecretKeyRingCollection(in);
 	    PGPSecretKey key = null;
-	    Iterator<?> rIt = pgpSec.getKeyRings();
+	    Iterator rIt = pgpSec.getKeyRings();
 	    while (key == null && rIt.hasNext()) {
 	      PGPSecretKeyRing kRing = (PGPSecretKeyRing)rIt.next();
-	      Iterator<?> kIt = kRing.getSecretKeys();
+	      Iterator kIt = kRing.getSecretKeys();
 	      while ( key == null && kIt.hasNext() ) {
 	        PGPSecretKey k = (PGPSecretKey)kIt.next();
 	        System.out.println(k + " [secret key]");
@@ -125,6 +129,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 	    if (key == null) {
 	      throw new IllegalArgumentException("Can't find key");
 	    }
+	    System.out.println(key);
 	    PGPPrivateKey pgpPrivKey = 
 	         key.extractPrivateKey(pass.toCharArray(), "BC");
 	    PGPSignatureGenerator sGen = new PGPSignatureGenerator(
@@ -149,6 +154,10 @@ public class CNSApplet extends JApplet implements ActionListener {
 		}
 	    cGen.close();
 	    out.close();
+	    keyIn.close();
+	    in.close();
+	    fIn.close();
+	    bOut.close();
 	}
 }
 
