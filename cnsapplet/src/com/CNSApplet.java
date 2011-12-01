@@ -34,6 +34,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 	private String nl = "\n";
 	private File fileToSign, keyFile;
 
+	public CNSApplet() {super();}
 	// Called when this applet is loaded into the browser.
 	public void init(){
 		initializeComponents();
@@ -116,22 +117,26 @@ public class CNSApplet extends JApplet implements ActionListener {
 	    PGPSecretKeyRingCollection pgpSec = 
 	                               new PGPSecretKeyRingCollection(in);
 	    PGPSecretKey key = null;
-	    Iterator rIt = pgpSec.getKeyRings();
+	    Iterator<?> rIt = pgpSec.getKeyRings();
+	    PGPPrivateKey pgpPrivKey = null;
 	    while (key == null && rIt.hasNext()) {
 	      PGPSecretKeyRing kRing = (PGPSecretKeyRing)rIt.next();
-	      Iterator kIt = kRing.getSecretKeys();
+	      Iterator<?> kIt = kRing.getSecretKeys();
 	      while ( key == null && kIt.hasNext() ) {
 	        PGPSecretKey k = (PGPSecretKey)kIt.next();
 	        System.out.println(k + " [secret key]");
-	        if ( k.isSigningKey() ) { key = k; }
+	        if ( k.isSigningKey() ) {
+	        	key = k; 
+	        	try{
+	        		pgpPrivKey = key.extractPrivateKey(pass.toCharArray(), "BC");
+	        	}catch (Exception e) {key = null;}
+	        }
 	      }
 	    }
 	    if (key == null) {
 	      throw new IllegalArgumentException("Can't find key");
 	    }
-	    System.out.println(key);
-	    PGPPrivateKey pgpPrivKey = 
-	         key.extractPrivateKey(pass.toCharArray(), "BC");
+	    
 	    PGPSignatureGenerator sGen = new PGPSignatureGenerator(
 	         key.getPublicKey().getAlgorithm(), PGPUtil.SHA1, "BC");
 	    sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
