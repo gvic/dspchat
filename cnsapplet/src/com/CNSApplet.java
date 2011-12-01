@@ -31,8 +31,10 @@ public class CNSApplet extends JApplet implements ActionListener {
 	private JButton selectFile, selectCertificate, sign;
 	private JTextArea log;
 	private JFileChooser fc;
+	private JComboBox cbox;
 	private String nl = "\n";
 	private File fileToSign, keyFile;
+	private String userSelected;
 
 	public CNSApplet() {super();}
 	// Called when this applet is loaded into the browser.
@@ -47,12 +49,24 @@ public class CNSApplet extends JApplet implements ActionListener {
 		selectCertificate = new JButton("Select a key file");
 		selectCertificate.addActionListener(this);
 		selectCertificate.setEnabled(false);
+	    cbox = new JComboBox();
+	    try {
+			populateCB(cbox);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (PGPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    cbox.addActionListener(this);
 		sign = new JButton("Sign the selected file");
 		sign.setEnabled(false);
 		sign.addActionListener(this);
 		log = new JTextArea(100,70);
 	    panel.add(selectFile);
 	    panel.add(selectCertificate);
+	    panel.add(cbox);
 	    panel.add(sign);
 	    panel.add(log);
 	    Container content = getContentPane();
@@ -87,12 +101,13 @@ public class CNSApplet extends JApplet implements ActionListener {
 	            log.append("Open command cancelled by user." + nl);
 	        }
 		}else if(e.getSource() == sign){
-			// REAL BUSINESS LOGIC MUST BE IMPLEMENTED HERE
-			// SAKURA POWAAAA HERE YOUR CODING TIME COMES!!
+			userSelected = cbox.getSelectedItem().toString();
+
+			System.out.println(userSelected+"blabla");
 			String str = JOptionPane.showInputDialog(null, "Enter password : ", 
 					"Password", 1);
 			try {
-				sign(fileToSign.getAbsolutePath(), keyFile.getAbsolutePath(), str);
+				sign(fileToSign.getAbsolutePath(), keyFile.getAbsolutePath(), str, userSelected);
 			} catch (NoSuchProviderException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -108,8 +123,9 @@ public class CNSApplet extends JApplet implements ActionListener {
 			}
 		}
 	}
-	public void sign(String filename, String keyRingName, String pass) throws IOException, PGPException, NoSuchProviderException, NoSuchAlgorithmException
+	public void sign(String filename, String keyRingName, String pass, String user) throws IOException, PGPException, NoSuchProviderException, NoSuchAlgorithmException
 	{
+		Boolean foundMatch = false;
 		Security.addProvider(new BouncyCastleProvider());
 	    FileInputStream keyIn = new FileInputStream(keyRingName);
 	    FileOutputStream out = new FileOutputStream(filename + ".bpg");
@@ -119,6 +135,7 @@ public class CNSApplet extends JApplet implements ActionListener {
 	    PGPSecretKey key = null;
 	    Iterator<?> rIt = pgpSec.getKeyRings();
 	    PGPPrivateKey pgpPrivKey = null;
+	    PGPSecretKey keyMatch = null;
 	    while (key == null && rIt.hasNext()) {
 	      PGPSecretKeyRing kRing = (PGPSecretKeyRing)rIt.next();
 	      Iterator<?> kIt = kRing.getSecretKeys();
@@ -129,14 +146,30 @@ public class CNSApplet extends JApplet implements ActionListener {
 	        	key = k; 
 	        	try{
 	        		pgpPrivKey = key.extractPrivateKey(pass.toCharArray(), "BC");
-	        	}catch (Exception e) {key = null;}
+        			keyMatch = key;
+	        	}catch (Exception e) {key = null; keyMatch = null;}
 	        }
 	      }
+	      String tmpU = "";
+	      try{
+	      tmpU = keyMatch.getUserIDs().next().toString();
+	      System.out.println(tmpU);
+	      }
+	      catch (Exception e)
+	      {
+	    	  tmpU = "";
+	      }
+			if (tmpU.equals(user)){
+				System.out.println("Matched!");
+				foundMatch = true;
+				
+			}
 	    }
 	    if (key == null) {
-	      throw new IllegalArgumentException("Can't find key");
+	      JOptionPane.showMessageDialog(null, "No such key");
 	    }
-	    
+
+	    if(foundMatch && key != null){
 	    PGPSignatureGenerator sGen = new PGPSignatureGenerator(
 	         key.getPublicKey().getAlgorithm(), PGPUtil.SHA1, "BC");
 	    sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
@@ -158,11 +191,50 @@ public class CNSApplet extends JApplet implements ActionListener {
 			e.printStackTrace();
 		}
 	    cGen.close();
-	    out.close();
-	    keyIn.close();
-	    in.close();
 	    fIn.close();
 	    bOut.close();
+	    }
+
+	    keyIn.close();
+	    out.close();
+	    in.close();
+	}
+	public void populateCB(JComboBox c) throws IOException, PGPException{
+		String keyRingName = "/home/hykth/.gnupg/secring.gpg";
+		Security.addProvider(new BouncyCastleProvider());
+	    FileInputStream keyIn = new FileInputStream(keyRingName);
+	    InputStream in = PGPUtil.getDecoderStream(keyIn);
+	    PGPSecretKeyRingCollection pgpSec = 
+	                               new PGPSecretKeyRingCollection(in);
+	    PGPSecretKey key = null;
+	    Iterator<?> rIt = pgpSec.getKeyRings();
+	    PGPPrivateKey pgpPrivKey = null;
+	    while (key == null && rIt.hasNext()) {
+	      PGPSecretKeyRing kRing = (PGPSecretKeyRing)rIt.next();
+	      Iterator<?> kIt = kRing.getSecretKeys();
+	      while ( kIt.hasNext() ) {
+	        PGPSecretKey k = (PGPSecretKey)kIt.next();
+	        if ( k.isSigningKey() ) {
+	        	key = k; 
+	        	try{
+	        		c.addItem(key.getUserIDs().next().toString());
+	        	}catch (Exception e) {key = null;}
+	        }
+	      }
+	    }
+	    if (key == null) {
+	    	System.out.println("no key?");
+	    }
+	    
+	    try {
+			keyIn.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    in.close();
+	
 	}
 }
+
 
